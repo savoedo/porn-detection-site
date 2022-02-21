@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title> Memoire</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="/static/assets/favicon.ico" />
+        <!-- Bootstrap icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" type="text/css" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="/static/css/styles.css" rel="stylesheet" />
+        <link href="/static/css/dropzone.css" rel="stylesheet" />
+
+
+        <!--====== Bootstrap css <link rel="stylesheet" href="/static/contact/css/bootstrap.min.css"> ======-->
+        
+
+
+        <!--====== Default css ======-->
+        <link rel="stylesheet" href="/static/contact/css/default.css">
+
+        <!--====== Line Icons css ======-->
+        <link rel="stylesheet" href="/static/contact/css/LineIcons.css">
+
+         <!--====== Style css          <link rel="stylesheet" href="/static/contact/css/style.css"> ======-->
+        <link rel="stylesheet" href="/static/contact/css/style.css">
+        <script>
+            $(document).ready(function(){
+            $('#sample_form').on('submit', function(event){
+              event.preventDefault();
+
+              var count_error = 0;
+
+              if($('#file').val() == '')
+              {
+                count_error = 1;
+              }
+              else
+              {
+                count_error = 0;
+              }
+             
+            /*  if($('#username').val() == '')
+              {
+               $('#first_name_error').text('User Name is required');
+               count_error++;
+              }
+              else
+              {
+               $('#first_name_error').text('');
+              }
+             
+              if($('#useremail').val() == '')
+              {
+               $('#last_name_error').text('Email is required');
+               count_error++;
+              }
+              else
+              {
+               $('#last_name_error').text('');
+              }
+              */
+
+            var form = $('#sample_form')[0];
+
+            // Create an FormData object 
+            var data = new FormData(form);
+
+            // If you want to add an extra field for the FormData
+            //data.append("CustomField", "This is some extra data, testing");
+
+             
+              if(count_error == 0)
+              {
+            $.ajax({
+              url:"/upload",
+              type: "POST",
+              enctype: 'multipart/form-data',
+              data: data,
+              processData: false,
+              contentType: false,
+              cache: false,
+              beforeSend:function()
+              {
+               $('#save').attr('disabled', 'disabled');
+               $('#text').html('Processus en cours veillez patientez...');
+               $('#text-1').css('display', 'none');
+               $('#text-2').css('display', 'none');
+               $('#text-3').css('display', 'none');
+               $('#loading').css('display', 'block');
+               $('#download').css('display', 'none');
+              },
+              success:function(data)
+              { 
+               var percentage = 0;
+             
+               var timer = setInterval(function(){
+                percentage = percentage + 20;
+                progress_bar_process(percentage, timer,data);
+               }, 1000);
+              }
+             })
+              }
+              else
+              {
+               return false;
+              }
+                
+             });
+               
+             function progress_bar_process(percentage, timer,data)
+             {
+                $('.progress-bar').css('width', percentage + '%');
+                if(data['video']=='error')
+                    {
+                        clearInterval(timer);
+                        $('#sample_form')[0].reset();
+                        $('#save').attr('disabled', false);
+                        $('#text').html(data['message']);
+                        $('#text').css('color', 'red');
+                        $('#text-1').html('Veillez vérifier le format de vos fichiers');
+                        $('#text-2').html('Les formats authorisés sont: mkv, webm, mp4, avi');
+                        $('#text-3').html("N'oubliez pas de nous laisser un message d'appréciation. Merci !");
+                        $('#loading').css('display', 'none');
+                        $('#text-1').css('display', 'block');
+                        $('#text-2').css('display', 'block');
+                        $('#text-3').css('display', 'block');
+                        //$('#download').css('display', 'block');
+                        //$('#download').attr("href", "/download/".concat( data['video']));
+                        // $('#dModal').attr("href", "/download/".concat( data['video']));
+                        //$("#myModal").modal('show');
+                        setTimeout(function(){
+                        $('#success_message').html('');
+                        }, 5000);
+                    
+                    }
+                if(data['video']=='unsafe')
+                    {
+                        clearInterval(timer);
+                        $('#sample_form')[0].reset();
+                        $('#save').attr('disabled', false);
+                        $('#text').html(data['message']);
+                        $('#text-1').html('Votre fichier ne contient pas de séquence non ponographique');
+                        $('#text-2').html('Veillez téléverser une nouvelle vidéo');
+                        $('#text-3').html("N'oubliez pas de nous laisser un message d'appréciation. Merci !");
+                        $('#loading').css('display', 'none');
+                        $('#text-1').css('display', 'block');
+                        $('#text-2').css('display', 'block');
+                        $('#text-3').css('display', 'block');
+                        //$('#download').css('display', 'block');
+                        //$('#download').attr("href", "/download/".concat( data['video']));
+                        // $('#dModal').attr("href", "/download/".concat( data['video']));
+                        //$("#myModal").modal('show');
+                        setTimeout(function(){
+                        $('#success_message').html('');
+                        }, 5000);
+                    
+                    }
+                else
+                    {
+                        clearInterval(timer);
+                        $('#sample_form')[0].reset();
+                        $('#save').attr('disabled', false);
+                        $('#text').html(data['message']);
+                        $('#text-1').html('Vous pouvez télécharger votre video');
+                        $('#text-2').html('Cette sera supprimer au bout de 24 heures');
+                        $('#text-3').html("N'oubliez pas de nous laisser un message d'appréciation. Merci !");
+                        $('#loading').css('display', 'none');
+                        $('#text-1').css('display', 'block');
+                        $('#text-2').css('display', 'block');
+                        $('#text-3').css('display', 'block');
+                        $('#download').css('display', 'block');
+                        $('#download').attr("href", "/download/".concat( data['video']));
+                        // $('#dModal').attr("href", "/download/".concat( data['video']));
+                        //$("#myModal").modal('show');
+                        setTimeout(function(){
+                        $('#success_message').html('');
+                        }, 5000);
+                    }
+            }
+               
+            });
+
+        
+           </script>
+           <script>
+            Filevalidation = () => {
+                const fi = document.getElementById('file');
+                // Check if any file is selected.
+                if (fi.files.length > 0) {
+                    for (const i = 0; i <= fi.files.length - 1; i++) {
+          
+                        const fsize = fi.files.item(i).size;
+                        const file = Math.round((fsize / 1024));
+                        // The size of the file.
+                        if (file >= 100*1024) {
+                            fi.value = "";
+                            alert(
+                              "La taille maximale authorisé est de 100MB");
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div class="preloader">
+            <div class="loader_34">
+                <div class="ytp-spinner">
+                    <div class="ytp-spinner-container">
+                        <div class="ytp-spinner-rotator">
+                            <div class="ytp-spinner-left">
+                                <div class="ytp-spinner-circle"></div>
+                            </div>
+                            <div class="ytp-spinner-right">
+                                <div class="ytp-spinner-circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Navigation
+        <nav class="navbar navbar-light bg-light static-top">
+            <div class="container">
+                <a class="navbar-brand" href="#!"> Memoire</a>
+                <a class="btn btn-primary" href="#signup">Sign Up</a>
+            </div>
+        </nav>
+        Masthead-->
+        <header class="masthead" style="background: url('/static/assets/img/family.jpg') no-repeat center center; background-size:cover;
+        position:relative;
+        height:100vh;">
+    
+            <div class="container" >
+                <div class="row justify-content-center " >
+                    <div class="col-xl-10" >
+                        <div class="text-center text-white" style="margin-top: 30%;">
+                            <!-- Page heading-->
+                            <nav class="navbar navbar-light  static-top">
+                                <div class="container" style="justify-content: center;" >
+                                    <h1 class="mb-5" >Supprimez les scènes érotiques ou pornographiques de vos films et regardez-les en famille sans crainte!</h1>
+                                    
+                                    <a class="main-btn" href="#test">Top c'est parti  <i class="bi bi-arrow-right"></i> </a>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Icons Grid-->
+        <section class="features-icons bg-light text-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+                            <div class="features-icons-icon d-flex" style="margin-bottom: 30px; color: #754ef9;"><i class="lni lni-code m-auto text-primary"></i></div>
+                            <h3 style="margin-bottom: 20px;"> Detection des scènes</h3>
+                            <p class="lead mb-0">Analyse les séquences de la vidéo pour détecter les  scènes érotiques ou pornographiques </p>
+                            
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="features-icons-item mx-auto mb-5 mb-lg-0 mb-lg-3">
+                            <div class="features-icons-icon d-flex" style="margin-bottom: 30px; color: #754ef9;"><i class="lni lni-cut m-auto text-primary"></i></div>
+                            <h3 style="margin-bottom: 20px;">Suppression des scènes</h3>
+                            <p class="lead mb-0">Supprime les scènes érotiques ou pornographiques trouvées dans la vidéo</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="features-icons-item mx-auto mb-0 mb-lg-3">
+                            <div class="features-icons-icon d-flex" style="margin-bottom: 30px; color: #754ef9;"><i class="lni lni-video m-auto text-primary" ></i></div>
+                            <h3 style="margin-bottom: 20px;">Génération d'une nouvelle vidéo</h3>
+                            <p class="lead mb-0">Génère une nouvelle vidéo dénuée de scène érotique ou pornographique</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Image Showcases-->
+        <section class="showcase">
+            <div class="container-fluid p-0">
+                <div class="row g-0">
+                    <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background: url('/static/assets/img/ia.png') no-repeat center center; background-size: cover; position:relative;"></div>
+                    <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                        <h2>Intelligence Artificielle</h2>
+                        <p class="lead mb-0">L'intelligence artificielle est plus qu'une technologie de rupture, c'est un ensemble de techniques (machine learning, deep learning, computer vision, natural language processing...) qui entrent dans nos vies quotidiennes et dont l'impact sur tous les secteurs de l'économie ne va faire que croître.</p>
+                    </div>
+                </div>
+                <div class="row g-0">
+                    <div class="col-lg-6 text-white showcase-img" style="background: url('/static/assets/img/signal.jpg') no-repeat center center; background-size: cover; position:relative; "></div>
+                    <div class="col-lg-6 my-auto showcase-text">
+                        <h2>Signalétique cinéma</h2>
+                        <p class="lead mb-0">Pour pouvoir être diffusée en salle, toute œuvre cinématographique, long-métrage, court-métrage ou même bande-annonce – doit recevoir un visa d’exploitation, qui peut être assorti de restrictions d’accès au public en dessous d’un certain âge.
+
+                            L’objectif est de protéger les jeunes spectateurs des contenus inadaptés et informer le public…</p>
+                    </div>
+                </div>
+                <div class="row g-0">
+                    <div class="col-lg-6 order-lg-2 text-white showcase-img" style="background: url('/static/assets/img/fam.jpg') no-repeat center center; background-size: cover; position:relative;"></div>
+                    <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+                        <h2>Education familiale</h2>
+                        <p class="lead mb-0">La famille est le « premier système social », par lequel le jeune enfant acquiert et développe des compétences cognitives et sociales. Il est donc important pour les parents  de protéger leurs enfants contre certains évènements du monde extérieur qui pourraient le marquer s’il n’avait pas encore la maturité pour les comprendre.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Testimonials-->
+ 
+        <section  class="about-area bg-light pt-125 pb-130">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="section-title text-center">
+                            <h2 class="title">Les performances</h2>
+                        </div> <!-- section title -->
+                    </div>
+                </div> <!-- row -->
+                <div class="row">
+                    <div class="col-xl-10 offset-xl-1 col-lg-10">
+                        <div class="about-skills pt-25">
+                            <div class="skill-item mt-25">
+                                <div class="skill-header">
+                                    <h6 class="skill-title">MobileNet V2</h6>
+                                    <div class="skill-percentage">
+                                        <div class="count-box counted">
+                                            <span class="counter">91</span>
+                                        </div>
+                                        %
+                                    </div>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="bar-inner">
+                                        <div class="bar progress-line" data-width="91"></div>
+                                    </div>
+                                </div>
+                            </div> <!-- skill item -->
+                            <div class="skill-item mt-25">
+                                <div class="skill-header">
+                                    <h6 class="skill-title">Inception V3</h6>
+                                    <div class="skill-percentage">
+                                        <div class="count-box counted">
+                                            <span class="counter">87</span>
+                                        </div>
+                                        %
+                                    </div>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="bar-inner">
+                                        <div class="bar progress-line" data-width="87"></div>
+                                    </div>
+                                </div>
+                            </div> <!-- skill item -->
+                            <div class="skill-item mt-25">
+                                <div class="skill-header">
+                                    <h6 class="skill-title">Resnet 152</h6>
+                                    <div class="skill-percentage">
+                                        <div class="count-box counted">
+                                            <span class="counter">81</span>
+                                        </div>
+                                        %
+                                    </div>
+                                </div>
+                                <div class="skill-bar">
+                                    <div class="bar-inner">
+                                        <div class="bar progress-line" data-width="81"></div>
+                                    </div>
+                                </div>
+                            </div> <!-- skill item -->
+                            
+                        </div> <!-- about skills -->
+                    </div>
+                </div> <!-- row -->
+            </div> <!-- container -->
+        </section>
+          
+        <div id="myModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Processus terminé</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <p>Vous pouvez télécharger votre vidéo. Elle sera supprimée au bout de 24heure</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="main-btn custom" id="dModal"> Télécharger</button>
+                  <button type="button" class="main-btn custom-2" data-dismiss="modal">Fermer</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <section class="showcase" id="test" style="margin-bottom: 3%;">
+          <!--   <div class="container-fluid p-0"> -->
+            <div class="container">
+                <div class="row g-0">
+                    <h2 class="mb-5 text-center" style="margin-top: 5%;">Générer votre vidéo</h2>
+                    <div class="col-lg-6 text-white showcase-img" style="padding: 20px;">
+                        <span id="success_message"></span>
+                        <form  method = "POST" 
+                        enctype = "multipart/form-data" id="sample_form">
+                            <div class="form-group files color" style="margin-bottom: 5%;">
+                              <input id="file" onchange="Filevalidation()" required type="file" name = "file" style="height: 80%;" class="form-control" multiple="">
+                            </div>
+                            <div class="form-group" align="center" >
+                                <input type="submit" name="save" id="save" style=" width: 100%;" class="main-btn " value="Lancer le test" />
+                            </div>
+                        </form>
+                        <div class="form-group" id="process" style="display:none;">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped active bg-success" role="progressbar" aria-valuemin="0" aria-valuemax="100" style=""></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6" style="padding: 20px; padding-top: 30px;">
+                        <h2 id="text" style="text-align: center; margin-bottom: 30px;">Lancer votre test</h2>
+                        
+                        <p id="text-1" style=" padding-left: 25px;"> L'algorithme de filtrage prend environ de quart (1/4) de la durée de votre vidéo.</p>
+                        <p id="text-2" style=" padding-left: 25px;"> Seul les formats vidéos sont prises en charge (mp4, avi, mkv).</p>
+                        <p id="text-3" style=" padding-left: 25px;"> La taille maximale de votre fichier est de 100MB.</p>
+                       
+                        <div class="circles" id="loading" style="display:none;">
+                            <div class="circle1"></div>
+                            <div class="circle2"></div>
+                            <div class="circle3"></div>
+                            <div class="circle4"></div>
+                            <div class="circle5"></div>
+                            <div class="circle6"></div>
+                            <div class="circle7"></div>
+                            <div class="circle8"></div>
+                            <div class="circle9"></div>
+                            <div class="circle10"></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 78px; " align="center" >
+                            <p>
+                                <a style="width: 100%; display: none; " class="main-btn" id="download" >Télécharger votre vidéo</i></a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+  
+
+        <section id="call-to-action" class="call-to-action pt-125 pb-130 bg_cover" style="background-image: url(static/contact/images/call-to-action.jpg)">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-xl-8 col-lg-9">
+                        <div class="call-action-content text-center">
+                            <h2 class="action-title">Télécharger le projet</h2>
+                            <p>Ce projet est open source et disponible sur un dépot github</p>
+                            <ul>
+                                <li><a class="main-btn custom" href="#">Télécharger</a></li>
+                                <li><a class="main-btn custom-2" href="#">Voir</a></li>
+                            </ul>
+                        </div> <!-- call action content -->
+                    </div>
+                </div> <!-- row -->
+            </div> <!-- container -->
+        </section>
+
+        <section id="contact" class="contact-area pt-125 pb-130 gray-bg">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="section-title text-center pb-25">
+                            <h2 class="title">Contactez-Nous</h2>
+                            <p>Souhaitez-vous en savoir plus sur notre travail ! Laissez-nous un message.</p>
+                        </div> <!-- section title -->
+                    </div>
+                </div> <!-- row -->
+                <div class="row justify-content-center">
+                    <div class="col-lg-4 col-md-6 col-sm-7">
+                        <div class="contact-box text-center mt-30">
+                            <div class="contact-icon">
+                                <i class="lni-map-marker"></i>
+                            </div>
+                            <div class="contact-content">
+                                <h6 class="contact-title">Adresse</h6>
+                                <p>Abomey-Calavi / BENIN</p>
+                            </div>
+                        </div> <!-- contact box -->
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-7">
+                        <div class="contact-box text-center mt-30">
+                            <div class="contact-icon">
+                                <i class="lni-phone"></i>
+                            </div>
+                            <div class="contact-content">
+                                <h6 class="contact-title">Téléphone</h6>
+                                <p>+229 97 70 57 31</p>
+                            </div>
+                        </div> <!-- contact box -->
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-7">
+                        <div class="contact-box text-center mt-30">
+                            <div class="contact-icon">
+                                <i class="lni-envelope"></i>
+                            </div>
+                            <div class="contact-content">
+                                <h6 class="contact-title">Email</h6>
+                                <p>nounagnonsav@gmail.com</p>
+                            </div>
+                        </div> <!-- contact box -->
+                    </div>
+                </div> <!-- row -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="contact-form pt-30">
+                            <form id="contact-form" >
+                                <div class="single-form">
+                                    <input type="text" name="name" placeholder="Nom">
+                                </div> <!-- single form -->
+                                <div class="single-form">
+                                    <input type="email" name="email" placeholder="Email">
+                                </div> <!-- single form -->
+                                <div class="single-form">
+                                    <textarea name="message" placeholder="Message"></textarea>
+                                </div> <!-- single form -->
+                                <p class="form-message"></p>
+                                <div class="single-form">
+                                    <button class="main-btn" type="submit">Envoyez <i class="bi bi-arrow-right"></i></button>
+                                </div> <!-- single form -->
+                            </form>
+                        </div> <!-- contact form -->
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="contact-map mt-60">
+                            <div class="gmap_canvas">                            
+                                <iframe id="gmap_canvas" src="https://maps.google.com/maps?q=Mission%20District%2C%20San%20Francisco%2C%20CA%2C%20USA&t=&z=13&ie=UTF8&iwloc=&output=embed" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+                            </div>
+                        </div> <!-- contact map -->
+                    </div>
+                </div> <!-- row -->
+            </div> <!-- container -->
+        </section>
+
+
+        <!-- Footer-->
+        <footer id="footer" class="footer-area">
+            
+            <div class="footer-copyright pb-20">
+                <div class="container-fluid p-0">
+                    <div class="row g-0">
+                        <div class="col-lg-6">
+                            <div class="copyright-text text-center pt-50">
+                                <p>Copyright © 2021.  <a href="#" rel="nofollow"></a></p>
+                            </div> <!-- copyright text -->
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="footer-content text-center">
+                               <!-- <a href="index.html">
+                                    <img src="assets/images/logo-2.png" alt="Logo"> 
+                                </a> -->
+                                <ul>
+                                    <li><a href="#"><i class="lni-facebook-filled"></i></a></li>
+                                    <li><a href="#"><i class="lni-twitter-original"></i></a></li>
+                                    <li><a href="#"><i class="lni-pinterest"></i></a></li>
+                                    <li><a href="#"><i class="lni-linkedin-original"></i></a></li>
+                                </ul>
+                            </div> <!-- footer content -->
+                        </div>
+                    </div> <!-- row -->
+                </div> <!-- container -->
+            </div> <!-- footer widget -->
+        </footer>
+    
+        <!--====== FOOTER PART ENDS ======-->
+    
+        <!--====== BACK TOP TOP PART START ======-->
+    
+        <a href="#" class="back-to-top"><i class="lni-chevron-up"></i></a>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="/static/js/scripts.js"></script>
+        <script src="/static/js/dropzone.js"></script>
+
+        
+            <!--====== Magnific Popup js ======-->
+        <script src="/static/contact/js/jquery.magnific-popup.min.js"></script>
+
+        <!--====== Parallax js ======-->
+        <script src="/static/contact/js/parallax.min.js"></script>
+
+        <!--====== Counter Up js ======-->
+        <script src="/static/contact/js/waypoints.min.js"></script>
+        <script src="/static/contact/js/jquery.counterup.min.js"></script>
+
+
+        <!--====== Appear js ======-->
+        <script src="/static/contact/js/jquery.appear.min.js"></script>
+
+
+        <!--====== Main js ======-->
+        <script src="/static/contact/js/main.js"></script>
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    </body>
+</html>
